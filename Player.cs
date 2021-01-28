@@ -10,7 +10,10 @@ namespace Brickon
     public class Player
     {
        public static  Vector3 Position = new Vector3();
+		// public Vector3 col_coords = new Vector3(0, 0, 0);
 		public static Camera camera = new Camera();
+
+		 
        public  int ChunkNumber;
 
 		public Vector3 getPos()
@@ -21,19 +24,34 @@ namespace Brickon
 		{
 			Position.Y = y;
 		}
+		public void setX(float x)
+		{
+			Position.X = x;
+		}
+		public void setZ(float z)
+		{
+			Position.Z = z;
+		}
 		public Camera GetCamera()
 		{
 			return camera;
 		}
-
+		/*public Vector3 getColCoords()
+		{
+			return col_coords;
+		}
+		public void setColCoords(Vector3 colcoords)
+		{
+			col_coords = colcoords;
+		}*/
 	}
 	public class Camera
 	{
 		public static float yaw;
 
-		public void setYaw()
+		public void setYaw(float yawvl)
 		{
-			yaw = OpenTK.Input.Mouse.GetCursorState().X;
+			yaw += yawvl;
 		}
 		public float getYaw()
 		{
@@ -44,6 +62,8 @@ namespace Brickon
 			// double yaw_ =  (Math.PI / 180) * yaw;
 			Player.Position.X -= distance * (float)Math.Sin((Math.PI / 180) * yaw);
 			Player.Position.Z += distance * (float)Math.Cos((Math.PI / 180) * yaw);
+			
+			//Player.col_coords.Z ++;
 
 		}
 		public void walkBackwards(float distance)
@@ -53,6 +73,7 @@ namespace Brickon
 
 			Player.Position.X += distance * (float)Math.Sin((Math.PI / 180) * yaw);
 			Player.Position.Z -= distance * (float)Math.Cos((Math.PI / 180) * yaw);
+			//Player.col_coords.Z--;
 		}
 		public void walkRight(float distance)
 		{
@@ -60,12 +81,14 @@ namespace Brickon
 
 			Player.Position.X -= distance * (float)Math.Sin((Math.PI / 180) * -yaw + 90);
 			Player.Position.Z += distance * (float)Math.Cos((Math.PI / 180) * -yaw - 90); //
+			//Player.col_coords.X--;
 		}
 
 		public void walkLeft(float distance)
 		{
 			Player.Position.X += distance * (float)Math.Sin((Math.PI / 180) * -yaw + 90);
 			Player.Position.Z -= distance * (float)Math.Cos((Math.PI / 180) * -yaw - 90); // // // // // // // //
+			//Player.col_coords.X++;
 
 		}
 		public void walk__(float distance)

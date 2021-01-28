@@ -170,6 +170,7 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 }";
 
 		int texture;
+		
 		protected override void OnResize(EventArgs e)
 		{
 			base.OnResize(e);
@@ -182,6 +183,7 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 		}
 
 		float time;
+
 		protected override void OnLoad(EventArgs e)
 		{
 			//Ignore this
@@ -190,7 +192,7 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 			//Set clear color
 			GL.ClearColor(Color4.CornflowerBlue);
 
-			blocks.Add(new Vector3(888888, 88888, 888888));
+			//blocks.Add(new Vector3(888888, 88888, 888888));
 
 
 
@@ -215,13 +217,21 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 			Stuff.colors = new List<Vector3>();
 			Stuff.texcoords = new List<Vector2>();
 			Random rnd = new Random();
-		/**/
+			/**/
+
+			chunks.Add(new Chunk());
 
 
+			Chunk chunk = new Chunk();
 
-		vertexGen(vao, vbov, vbc,vbt, out vao, out vbov, out vbc,out vbt);
+			chunk.generate();
 
+			chunk.setPosition(new Vector3(1, 1, 1));
+			chunks.Add(chunk);
 
+			vertexGen(vao, vbov, vbc,vbt, out vao, out vbov, out vbc,out vbt);
+
+			MouseMove += mouseMovement;
 			//Task.Run(vbo);
 
 			//Why create the buffer there when you can do it on render and load the cpu every frame for creating the triangle
@@ -345,11 +355,18 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 		int shader;
 
 		int dt;
-		
+
+		bool upd;
+		Chunk chunk = new Chunk();
+		List<Chunk> chunks = new List<Chunk>();
+
+		float y_direction = -353;
+
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			//Ignore this too
 			base.OnRenderFrame(e);
+			//Mouse.SetPosition(Width / 1, Height / 1);
 			//Clear the window
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -360,21 +377,31 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 
 		
 			
-			view = Matrix4.CreateTranslation(new Vector3(0, 0, 0)) * Matrix4.CreateRotationY(MathHelper.DegreesToRadians(player.GetCamera().getYaw())) * Matrix4.CreateRotationX(MathHelper.DegreesToRadians(3)); //;
+			view = Matrix4.CreateTranslation(new Vector3(0, 0, 0)) * Matrix4.CreateRotationY(MathHelper.DegreesToRadians(player.GetCamera().getYaw())) * Matrix4.CreateRotationX(MathHelper.DegreesToRadians(y_direction)); //3;
 			int vl = GL.GetUniformLocation(shader, "view");
 			GL.UniformMatrix4(vl, false, ref view);
 
-			player.GetCamera().setYaw();
-				
-			Stuff.vertices = new List<Vector3>();
+			
+			player.ChunkNumber = 1;
+				if(upd == true)
+			{
+				Stuff.vertices = new List<Vector3>();
 			Stuff.colors = new List<Vector3>();
 			Stuff.texcoords = new List<Vector2>();
 
-
-
+			}
+			//List<Vector3> chunkdata = new List<Vector3>(chunks[player.ChunkNumber].chunkdata);
+			/*if (chunkdata.Contains(new Vector3((int)player.getPos().X, (int)player.getPos().Y, (int)player.getPos().Z)))
+			{
+				Console.WriteLine("detection");
+				collision = true;
+			}else
+			{
+				collision = false;
+			}*/
 			/*for (int x = 1; x < 88; x++)
 			{
-				
+
 	for (int y = 0; y < 11; y++)
 	/*{
 					blockobject(x- (int)MathHelper.DegreesToRadians((int)time * 8888 / 18 - x / x*1.1f) * x / 83, 1, (int)MathHelper.DegreesToRadians((int)time*8888/18*x)  );/////  + new Random().Next(1, 5)  -8 )*x/838+(x/888 838/
@@ -395,13 +422,16 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 
 			}*/
 
-
-			for (int i = 0; i < blocks.Count; i++)
+			if (upd == true)
+			{
+				for (int i = 0; i < chunks[player.ChunkNumber].object_use; i++)
 			{
 
-				Stuff.blockobject((int)blocks[i].X, (int)blocks[i].Y, (int)blocks[i].Z);
-
+				Stuff.blockobject((int)chunks[player.ChunkNumber].chunkdata[i].X+(int)chunks[player.ChunkNumber].getPos().X, (int)chunks[player.ChunkNumber].chunkdata[i].Y+(int)chunks[player.ChunkNumber].getPos().Y, (int)chunks[player.ChunkNumber].chunkdata[i].Z+(int)chunks[player.ChunkNumber].getPos().Z);
+	
 			}
+			}
+ 
 
 			Console.WriteLine(Stuff.vertices.Count);
 			//Console.WriteLine(Files.HexString("test"));
@@ -415,22 +445,97 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 			transform(0, 0, -5, shader, out shader);
 			GL.DrawArrays(PrimitiveType.Triangles, 0, Stuff.vertices.Count);
 
+
 			time += 0.1f;
 			SwapBuffers();
 		}
 		bool object_inst;
+
+		bool IsClose(float a, float b, float tolerance)
+		{
+			return Math.Abs(a - b) < tolerance;
+		}
+		
+		void mouseMovement(object sender, MouseMoveEventArgs e)
+		{
+
+			player.GetCamera().setYaw(e.XDelta);
+			//y_direction = ;
+			if(Sys.numBetween(Mouse.GetState().Y, -100, 111))
+			{
+				//if(y_direction<358)
+				//{
+					y_direction =   Mouse.GetState().Y  ;
+				//}
+			}
+			Console.WriteLine(Mouse.GetState().Y);
+												//player.GetCamera().setYaw(e);
+		}
 		protected override async void OnUpdateFrame(FrameEventArgs e)
 		{
 			var input = Keyboard.GetState();
 			if (this.Focused == true)
 			{
+				
 				if (input.IsKeyDown(Key.Escape))
 				{
 					Exit();
 				}
 				if (input.IsKeyDown(Key.W))
 				{
+
+					bool collision = false;
+
+					for (int i = 0; i < chunks[player.ChunkNumber].object_use; i++)
+					{
+
+
+						/*		if (
+						(-player.getPos().X <= 1.0f + (int)chunks[player.ChunkNumber].chunkdata[i].X && 0.5f + -player.getPos().X >= (int)chunks[player.ChunkNumber].chunkdata[i].X) &&
+						(-player.getPos().Y <= 1.0f + (int)chunks[player.ChunkNumber].chunkdata[i].Y+1 && 0.5f + -player.getPos().Y >= (int)chunks[player.ChunkNumber].chunkdata[i].Y+1) &&
+						(-player.getPos().Z <= 1.0f + (int)chunks[player.ChunkNumber].chunkdata[i].Z-5 && 0.5f + -player.getPos().Z >= (int)chunks[player.ChunkNumber].chunkdata[i].Z-5)
+					   )
+							collision = true;
+							*/
+
+						if ((Sys.numBetween(-player.getPos().X, chunks[player.ChunkNumber].chunkdata[i].X, chunks[player.ChunkNumber].chunkdata[i].X + 1.5f))
+							&& (Sys.numBetween(-player.getPos().Z, chunks[player.ChunkNumber].chunkdata[i].Z-5, chunks[player.ChunkNumber].chunkdata[i].Z-5 + 1.8f))&&
+							(-player.getPos().Y <= 1.0f + (int)chunks[player.ChunkNumber].chunkdata[i].Y + 1 && 0.5f + -player.getPos().Y >= (int)chunks[player.ChunkNumber].chunkdata[i].Y + 1)
+							)
+						{
+							//if(Sys.numBetween(-player.getPos().Y,(int)chunks[player.ChunkNumber].chunkdata[i].Y-1, (int)chunks[player.ChunkNumber].chunkdata[i].Y-1 + 0.5f))
+							//{
+								collision = true;
+							//}
+						}
+						
+
+						//if(Sys.numBetween(-player.getPos().Y, chunks[player.ChunkNumber].chunkdata[i].Y, chunks[player.ChunkNumber].chunkdata[i].Y))
+
+
+
+
+
+						/*	if (CollisionDetection.collisionDetectionBox(new Vector3(player.getPos().X, player.getPos().Y+1, player.getPos().Z), new Vector3(2+chunks[player.ChunkNumber].chunkdata[i].X, 0-chunks[player.ChunkNumber].chunkdata[i].Y, 0+-chunks[player.ChunkNumber].chunkdata[i].Z),new Vector3(chunks[player.ChunkNumber].chunkdata[i].X,  chunks[player.ChunkNumber].chunkdata[i].Y,chunks[player.ChunkNumber].chunkdata[i].Z))
+								)
+							{*/
+
+						//player.GetCamera().walkBackwards(8 * (float)e.Time*new Random().Next(1,8));
+						//break;
+						//System.out.println("Player is colliding!!!");
+						/*		}
+
+								//
+							}*/
+
+
+					}
+
+							//player.setColCoords(new Vector3(player.getColCoords().X, player.getColCoords().Y,player.getColCoords().Z + 1));
+
+							if (collision == false)
 					player.GetCamera().walkForward(8 * (float)e.Time);
+					
 				}
 
 				if (input.IsKeyDown(Key.S))
@@ -471,11 +576,36 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 				}
 				if (input.IsKeyDown(Key.Y))
 				{
-					if (!blocks.Contains(new Vector3((int)-player.getPos().X, (int)-player.getPos().Y, (int)-player.getPos().Z + 5)))
+					List<Vector3> chunkdata = new List<Vector3>(chunks[player.ChunkNumber].chunkdata);
+					if (!chunkdata.Contains(new Vector3((int)-player.getPos().X, (int)-player.getPos().Y, (int)-player.getPos().Z + 5)))
 					{
+						upd = true;
+						
 
-						blocks.Add(new Vector3((int)-player.getPos().X, (int)-player.getPos().Y, (int)-player.getPos().Z + 5));
+						for (int x = 0; x < 1; x++)
+                        {
+							/*			if (x >= -chunks[player.ChunkNumber].upbounds.Z && x <= 8888)
+										{
+											Console.WriteLine(chunks[player.ChunkNumber].upbounds+":"+x);
+										}*/
+							if (!chunkdata.Contains(new Vector3((int)-player.getPos().X, (int)-player.getPos().Y, (int)-player.getPos().Z + 5+x)))
+							{
+								if (Sys.numBetween((int)-player.getPos().Z +x, (int)chunks[player.ChunkNumber].lowbounds.Z ,(int)chunks[player.ChunkNumber].upbounds.Z))
+							{
+								if(Sys.numBetween((int)-player.getPos().X ,(int)chunks[player.ChunkNumber].lowbounds.X , (int)chunks[player.ChunkNumber].upbounds.X)){
+									if (Sys.numBetween((int)-player.getPos().Y , (int)chunks[player.ChunkNumber].lowbounds.Y ,(int)chunks[player.ChunkNumber].upbounds.Y))
+									{
+										chunks[player.ChunkNumber].chunkdata[chunks[player.ChunkNumber].object_use] = new Vector3((int)-player.getPos().X, (int)-player.getPos().Y, (int)-player.getPos().Z + 5+x);
+							chunks[player.ChunkNumber].object_use++;
+									}
+								}
 
+
+							}
+							}
+						}
+						await Sys.waitFunction(88);
+						upd = false;
 
 					}
 				}
@@ -522,6 +652,31 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 				await Task.Delay(time);
 			}
 
+			public static bool numBetween(int number, int min, int max)
+			{
+				bool returnnum;
+				if ((number - max) * (number - min) <= 0)
+				{
+					returnnum = true;
+				}
+				else
+				{ returnnum = false; }
+
+				return returnnum;
+			}
+			public static bool numBetween(float number, float min, float max)
+			{
+				bool returnnum;
+				if ((number - max) * (number - min) <= 0)
+				{
+					returnnum = true;
+				}
+				else
+				{ returnnum = false; }
+
+				return returnnum;
+			}
+
 		}
 
 		[STAThread]
@@ -530,6 +685,7 @@ float attenuation =  max((8.0f / (dist * dist)), 0.25f) ;
 			using (Program example = new Program())
 			{
 				example.VSync = VSyncMode.On;
+				
 				example.Run();
 			}
 		}

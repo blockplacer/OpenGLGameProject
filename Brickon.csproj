@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Block.cs" />
+    <Compile Include="Chunk.cs" />
     <Compile Include="Files.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
